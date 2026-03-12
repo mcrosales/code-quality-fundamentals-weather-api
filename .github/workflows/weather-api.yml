@@ -4,20 +4,13 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "weather-api/**"
   pull_request:
     types: [opened, synchronize, reopened]
-    paths:
-      - "weather-api/**"
 
 jobs:
   build:
     name: Build, Test and Analyze
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: weather-api
 
     steps:
       - uses: actions/checkout@v4
