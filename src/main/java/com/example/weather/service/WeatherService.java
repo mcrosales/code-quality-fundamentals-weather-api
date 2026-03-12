@@ -2,6 +2,8 @@ package com.example.weather.service;
 
 import com.example.weather.model.WeatherData;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -15,8 +17,7 @@ import java.util.Map;
 @Service
 public class WeatherService {
 
-    // Sonar: S2068 — credentials should not be hard-coded
-    private static final String API_KEY = "weather-api-secret-key-12345";
+    private static final Logger logger = LoggerFactory.getLogger(WeatherService.class);
 
     private Map<String, WeatherData> weatherCache = new HashMap<>();
 
@@ -29,11 +30,12 @@ public class WeatherService {
         weatherCache.put("sydney", new WeatherData("Sydney", 19.5, 55.0, "Sunny"));
     }
 
-    // Sonar: S2259 — null pointer dereference (data could be null if city not found)
-    // Sonar: S106 — System.out should not be used for logging
     public WeatherData getWeather(String city) {
         WeatherData data = weatherCache.get(city.toLowerCase());
-        System.out.println("Fetching weather for: " + data.getCity()); // Bug: NPE if city not found
+        if (data == null) {
+            return null;
+        }
+        logger.info("Fetching weather for: {}", data.getCity());
         return data;
     }
 
@@ -41,11 +43,7 @@ public class WeatherService {
         return new ArrayList<>(weatherCache.values());
     }
 
-    // Sonar: S1481 — unused local variable
-    // Sonar: S109 — magic numbers
     public String getWeatherAlert(String city) {
-        String unusedConfig = "alert-config-v2";
-
         WeatherData data = weatherCache.get(city.toLowerCase());
         if (data == null) {
             return "City not found";
@@ -63,31 +61,25 @@ public class WeatherService {
         return "No alerts for " + city;
     }
 
-    // Sonar: S2095 — resources should be closed
-    // Sonar: S108 — empty catch block
     public String loadWeatherData(String filePath) {
         StringBuilder content = new StringBuilder();
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(filePath));
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 content.append(line);
             }
-            // Bug: reader is never closed (resource leak)
         } catch (IOException e) {
-            // empty catch block — exception silently swallowed
+            logger.error("Failed to load weather data from file: {}", filePath, e);
         }
         return content.toString();
     }
 
-    // Sonar: S106 — System.out for logging (repeated)
-    // Sonar: S1192 — duplicated string literal ("Weather report")
     public void printWeatherReport() {
-        System.out.println("Weather report - generated at " + System.currentTimeMillis());
+        logger.info("Weather report - generated at {}", System.currentTimeMillis());
         for (WeatherData data : weatherCache.values()) {
-            System.out.println("Weather report - " + data.getCity() + ": " + data.getTemperatureCelsius() + "°C");
+            logger.info("Weather report - {}: {}°C", data.getCity(), data.getTemperatureCelsius());
         }
-        System.out.println("Weather report - end");
+        logger.info("Weather report - end");
     }
 
 }

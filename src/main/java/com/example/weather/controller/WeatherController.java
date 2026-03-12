@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.HtmlUtils;
 
-import java.util.Date; // Sonar: S1128 — unused import
 import java.util.List;
 
 @RestController
@@ -36,10 +36,9 @@ public class WeatherController {
         return weatherService.getWeatherAlert(city);
     }
 
-    // Sonar: S5131 — XSS: user input embedded directly in HTML response
     @GetMapping("/search")
     public String searchCity(@RequestParam String city) {
-        return "<html><body>Weather search results for: " + city + "</body></html>";
+        return "<html><body>Weather search results for: " + HtmlUtils.htmlEscape(city) + "</body></html>";
     }
 
 }
