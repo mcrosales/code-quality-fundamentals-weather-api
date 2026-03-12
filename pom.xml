@@ -23,6 +23,7 @@
         <!-- SonarCloud — replace with your own keys -->
         <sonar.organization>mcrosales-projects</sonar.organization>
         <sonar.projectKey>mcrosales_code-quality-fundamentals-weather-api</sonar.projectKey>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
     <dependencies>
