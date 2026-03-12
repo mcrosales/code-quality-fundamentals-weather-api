@@ -22,9 +22,9 @@
         <spring-ai.version>1.0.0</spring-ai.version>
 
         <!-- SonarCloud — replace with your own keys -->
-        <sonar.organization>YOUR_SONARCLOUD_ORG</sonar.organization>
-        <sonar.projectKey>YOUR_SONARCLOUD_ORG_ai-assistant</sonar.projectKey>
-        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <!-- SonarCloud — replace with your own keys -->
+        <sonar.organization>mcrosales-projects</sonar.organization>
+        <sonar.projectKey>mcrosales-projects_spring-ai-demo</sonar.projectKey>
     </properties>
 
     <dependencyManagement>
