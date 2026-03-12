@@ -1,64 +1,62 @@
 package com.example.weather.util;
 
-// Sonar: S1118 — utility class should not have a public constructor
 public class TemperatureConverter {
 
-    // Sonar: S109 — magic numbers (1.8 and 32 should be named constants)
+    private TemperatureConverter() {
+        throw new AssertionError("Utility class should not be instantiated");
+    }
+
+    private static final double FAHRENHEIT_FACTOR = 1.8;
+    private static final double FAHRENHEIT_OFFSET = 32.0;
+
     public static double celsiusToFahrenheit(double celsius) {
-        return celsius * 1.8 + 32;
+        return celsius * FAHRENHEIT_FACTOR + FAHRENHEIT_OFFSET;
     }
 
     public static double fahrenheitToCelsius(double fahrenheit) {
-        return (fahrenheit - 32) / 1.8;
+        return (fahrenheit - FAHRENHEIT_OFFSET) / FAHRENHEIT_FACTOR;
     }
 
-    // Sonar: S3776 — cognitive complexity is too high (deeply nested conditions)
     public static String classifyTemperature(double temp, String unit, boolean isHumid, String region) {
-        String classification = "";
-        if (unit.equals("F")) {
-            temp = (temp - 32) / 1.8;
+        if ("F".equals(unit)) {
+            temp = fahrenheitToCelsius(temp);
         }
+
+        String base;
         if (temp < 0) {
-            classification = "freezing";
-            if (isHumid) {
-                classification = "freezing-humid";
-                if (region.equals("coastal")) {
-                    classification = "freezing-humid-coastal";
-                }
-            }
+            base = "freezing";
         } else if (temp < 15) {
-            classification = "cold";
-            if (isHumid) {
-                classification = "cold-humid";
-                if (region.equals("coastal")) {
-                    classification = "cold-humid-coastal";
-                } else if (region.equals("mountain")) {
-                    classification = "cold-humid-mountain";
-                }
-            }
+            base = "cold";
         } else if (temp < 25) {
-            classification = "mild";
-            if (isHumid) {
-                classification = "mild-humid";
-            }
+            base = "mild";
         } else if (temp < 35) {
-            classification = "warm";
-            if (isHumid) {
-                classification = "warm-humid";
-                if (region.equals("tropical")) {
-                    classification = "warm-humid-tropical";
-                }
-            }
+            base = "warm";
         } else {
-            classification = "hot";
-            if (isHumid) {
-                classification = "hot-humid";
-                if (region.equals("desert")) {
-                    classification = "extreme-heat";
-                }
+            base = "hot";
+        }
+
+        StringBuilder sb = new StringBuilder(base);
+        if (isHumid) {
+            sb.append("-humid");
+            switch (base) {
+                case "freezing":
+                    if ("coastal".equals(region)) sb.append("-coastal");
+                    break;
+                case "cold":
+                    if ("coastal".equals(region)) sb.append("-coastal");
+                    else if ("mountain".equals(region)) sb.append("-mountain");
+                    break;
+                case "warm":
+                    if ("tropical".equals(region)) sb.append("-tropical");
+                    break;
+                case "hot":
+                    if ("desert".equals(region)) return "extreme-heat";
+                    break;
+                default:
+                    break;
             }
         }
-        return classification;
+        return sb.toString();
     }
 
 }
