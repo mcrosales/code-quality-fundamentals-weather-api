@@ -1,5 +1,7 @@
 # Weather API
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=mcrosales_code-quality-fundamentals-weather-api&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=mcrosales_code-quality-fundamentals-weather-api)
+
 A classic Spring Boot REST API that serves weather data for different cities. This project requires **no external dependencies or API keys** — it runs out of the box with hardcoded data.
 
 ## What is a REST API?
