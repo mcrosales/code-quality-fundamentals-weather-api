@@ -11,12 +11,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class WeatherService {
 
-    // Sonar: S2068 — credentials should not be hard-coded
-    private static final String API_KEY = "weather-api-secret-key-12345";
+    // avoid hard-coded credentials; load from environment
+    private static final String API_KEY = System.getenv("WEATHER_API_KEY");
+
+    private static final Logger log = LoggerFactory.getLogger(WeatherService.class);
 
     private Map<String, WeatherData> weatherCache = new HashMap<>();
 
@@ -29,11 +33,14 @@ public class WeatherService {
         weatherCache.put("sydney", new WeatherData("Sydney", 19.5, 55.0, "Sunny"));
     }
 
-    // Sonar: S2259 — null pointer dereference (data could be null if city not found)
-    // Sonar: S106 — System.out should not be used for logging
+    // handle missing entries and use logger instead of System.out
     public WeatherData getWeather(String city) {
         WeatherData data = weatherCache.get(city.toLowerCase());
-        System.out.println("Fetching weather for: " + data.getCity()); // Bug: NPE if city not found
+        if (data == null) {
+            log.warn("No weather data for city {}", city);
+            return null;
+        }
+        log.info("Fetching weather for: {}", data.getCity());
         return data;
     }
 
@@ -41,53 +48,52 @@ public class WeatherService {
         return new ArrayList<>(weatherCache.values());
     }
 
-    // Sonar: S1481 — unused local variable
-    // Sonar: S109 — magic numbers
-    public String getWeatherAlert(String city) {
-        String unusedConfig = "alert-config-v2";
+    private static final double EXTREME_HEAT = 35.0;
+    private static final double HEAT_ADVISORY = 30.0;
+    private static final double FREEZE_WARNING = 0.0;
+    private static final double FROST_ADVISORY = 5.0;
 
+    public String getWeatherAlert(String city) {
         WeatherData data = weatherCache.get(city.toLowerCase());
         if (data == null) {
             return "City not found";
         }
 
-        if (data.getTemperatureCelsius() > 35) {
+        double temp = data.getTemperatureCelsius();
+        if (temp > EXTREME_HEAT) {
             return "EXTREME HEAT WARNING for " + city;
-        } else if (data.getTemperatureCelsius() > 30) {
+        } else if (temp > HEAT_ADVISORY) {
             return "Heat advisory for " + city;
-        } else if (data.getTemperatureCelsius() < 0) {
+        } else if (temp < FREEZE_WARNING) {
             return "FREEZE WARNING for " + city;
-        } else if (data.getTemperatureCelsius() < 5) {
+        } else if (temp < FROST_ADVISORY) {
             return "Frost advisory for " + city;
         }
         return "No alerts for " + city;
     }
 
-    // Sonar: S2095 — resources should be closed
-    // Sonar: S108 — empty catch block
+    // properly close resources and log failures
     public String loadWeatherData(String filePath) {
         StringBuilder content = new StringBuilder();
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(filePath));
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 content.append(line);
             }
-            // Bug: reader is never closed (resource leak)
         } catch (IOException e) {
-            // empty catch block — exception silently swallowed
+            log.error("Failed to load weather data from {}", filePath, e);
         }
         return content.toString();
     }
 
-    // Sonar: S106 — System.out for logging (repeated)
-    // Sonar: S1192 — duplicated string literal ("Weather report")
+    private static final String REPORT_PREFIX = "Weather report -";
+
     public void printWeatherReport() {
-        System.out.println("Weather report - generated at " + System.currentTimeMillis());
+        log.info("{} generated at {}", REPORT_PREFIX, System.currentTimeMillis());
         for (WeatherData data : weatherCache.values()) {
-            System.out.println("Weather report - " + data.getCity() + ": " + data.getTemperatureCelsius() + "°C");
+            log.info("{} {}: {}°C", REPORT_PREFIX, data.getCity(), data.getTemperatureCelsius());
         }
-        System.out.println("Weather report - end");
+        log.info("{} end", REPORT_PREFIX);
     }
 
 }

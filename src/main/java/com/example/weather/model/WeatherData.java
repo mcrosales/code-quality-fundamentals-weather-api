@@ -3,8 +3,8 @@ package com.example.weather.model;
 public class WeatherData {
 
     // Sonar: S1104 — public mutable fields should be private
-    public String city;
-    public String condition;
+    private String city;
+    private String condition;
 
     private double temperatureCelsius;
     private double humidity;
@@ -34,7 +34,7 @@ public class WeatherData {
     public void setCondition(String condition) { this.condition = condition; }
 
     public long getTimestamp() { return timestamp; }
-    public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
+    // timestamp is set at creation and should not be modified
 
     // Sonar: S1206 — "equals" overridden without "hashCode"
     @Override
@@ -42,9 +42,11 @@ public class WeatherData {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         WeatherData other = (WeatherData) obj;
-        return city.equals(other.city);
+        return city != null ? city.equals(other.city) : other.city == null;
     }
 
-    // hashCode() intentionally missing — Sonar will flag this as a Bug
-
+    @Override
+    public int hashCode() {
+        return city != null ? city.hashCode() : 0;
+    }
 }
