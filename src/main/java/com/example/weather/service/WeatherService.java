@@ -1,9 +1,5 @@
 package com.example.weather.service;
 
-import com.example.weather.model.WeatherData;
-import jakarta.annotation.PostConstruct;
-import org.springframework.stereotype.Service;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -11,14 +7,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import com.example.weather.model.WeatherData;
+
+import jakarta.annotation.PostConstruct;
 
 @Service
 public class WeatherService {
 
     // avoid hard-coded credentials; load from environment
-    private static final String API_KEY = System.getenv("WEATHER_API_KEY");
 
     private static final Logger log = LoggerFactory.getLogger(WeatherService.class);
 
