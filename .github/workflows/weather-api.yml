@@ -1,0 +1,49 @@
+name: "Weather API"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "weather-api/**"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "weather-api/**"
+
+jobs:
+  build:
+    name: Build, Test and Analyze
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: weather-api
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: maven
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar-weather-api
+          restore-keys: ${{ runner.os }}-sonar-weather-api
+
+      - name: Build and Test
+        run: mvn -B verify
+
+      - name: SonarCloud Analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: >
+          mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+          -Dsonar.qualitygate.wait=true
